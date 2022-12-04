@@ -14,8 +14,7 @@ class SignInPage extends StatelessWidget {
         actions: [
           IconButton(
               onPressed: () async {
-                await Provider.of<Auth>(context,listen:false).signOutAnonymously();
-                print('logout tıklandı');
+                await Provider.of<Auth>(context, listen: false).signOut();
               },
               icon: Icon(Icons.logout))
         ],

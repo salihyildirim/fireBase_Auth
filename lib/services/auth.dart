@@ -10,7 +10,7 @@ class Auth {
     return userCredential.user;
   }
 
-  Future<Void?> signOutAnonymously() async {
+  Future<Void?> signOut() async {
     await _firebaseAuth.signOut();
   }
 }
