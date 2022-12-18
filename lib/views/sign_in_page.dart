@@ -4,8 +4,27 @@ import 'package:provider/provider.dart';
 
 import '../services/auth.dart';
 
-class SignInPage extends StatelessWidget {
+class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
+
+  @override
+  State<SignInPage> createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  bool _isLoading = false;
+
+  Future<void> _signInAnonymously() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final user =
+        await Provider.of<Auth>(context, listen: false).signInAnonymously();
+    setState(() {
+      _isLoading = false;
+    });
+    print(user?.uid);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +49,7 @@ class SignInPage extends StatelessWidget {
             MyElevatedButton(
               child: Text("Anonymous"),
               color: Colors.orange,
-              onPressed: () async {
-                final user = await Provider.of<Auth>(context, listen: false)
-                    .signInAnonymously();
-                print(user?.uid);
-              },
+              onPressed: _isLoading ? () {} : _signInAnonymously,
             ),
             MyElevatedButton(
               child: Text("E-Mail"),
