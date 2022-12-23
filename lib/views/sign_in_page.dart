@@ -1,3 +1,4 @@
+import 'package:firebase_deneme/views/email_sign_in.dart';
 import 'package:firebase_deneme/widgets/my_elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +55,14 @@ class _SignInPageState extends State<SignInPage> {
             MyElevatedButton(
               child: Text("E-Mail"),
               color: Colors.yellowAccent,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (contex) {
+                    return EmailSignInPage();
+                  }),
+                );
+              },
             ),
             MyElevatedButton(
               child: Text("Google"),
