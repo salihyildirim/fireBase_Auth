@@ -1,3 +1,4 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 
 class EmailSignInPage extends StatefulWidget {
@@ -40,7 +41,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
             ),
             TextFormField(
               validator: (value) {
-                if (!(value!.contains('@'))) {
+                if (!EmailValidator.validate(value.toString())) {
                   return 'Lütfen Geçerli bir adres giriniz!';
                 } else {
                   return null;
@@ -56,6 +57,12 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               ),
             ),
             TextFormField(
+              validator: (value) {
+                if (value.toString().length < 6) {
+                  return 'Lütfen en az 6 haneli bir şifre giriniz.';
+                } else
+                  return null;
+              },
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock),
@@ -104,6 +111,12 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               style: TextStyle(fontSize: 20),
             ),
             TextFormField(
+              validator: (value) {
+                if (EmailValidator.validate(value.toString())) {
+                  return 'Lütfen Geçerli bir adres giriniz!';
+                } else
+                  return null;
+              },
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.email),
