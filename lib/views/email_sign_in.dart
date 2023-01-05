@@ -167,12 +167,22 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_registerFormKey.currentState!.validate()) {
-                  final user = Provider.of<Auth>(context, listen: false)
+                  // bütün form elemanları okey verdiyse
+                  final user = await Provider.of<Auth>(context, listen: false)
                       .createCreateUserWithEmailAndPassword(
-                          controllerEmail, controllerPassword);
-                } else {}
+                          controllerEmail.text, controllerPassword.text);
+                  print(user?.uid);
+
+                  if (!user!.emailVerified) {
+                    await user.sendEmailVerification();
+                  }
+                  _showMyDialog();
+                  setState(() {
+                    _formStatus = FormStatus.signIn;
+                  });
+                }
               },
               child: Text(
                 "KAYIT OL",
@@ -189,6 +199,35 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Onay Gerekiyor !'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Merhaba Lütfen Mail adresinizi kontrol ediniz.'),
+                Text(
+                    'Mailinizi onayladıktan sonra tekrar giriş yapabilirsiniz.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('ANLADIM.'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
