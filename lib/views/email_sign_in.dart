@@ -29,6 +29,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
 
   Widget buildSignInForm() {
     final _signInFormKey = GlobalKey<FormState>();
+    TextEditingController controllerMail = new TextEditingController();
+    TextEditingController controllerSifre = new TextEditingController();
 
     return Padding(
       padding: const EdgeInsets.all(30.0),
@@ -43,6 +45,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               style: TextStyle(fontSize: 20),
             ),
             TextFormField(
+              controller: controllerMail,
               validator: (value) {
                 if (!EmailValidator.validate(value.toString())) {
                   return 'Lütfen Geçerli bir adres giriniz!';
@@ -60,6 +63,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               ),
             ),
             TextFormField(
+              controller: controllerSifre,
               validator: (value) {
                 if (value.toString().length < 6) {
                   return 'Lütfen en az 6 haneli bir şifre giriniz.';
@@ -76,8 +80,12 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                print(_signInFormKey.currentState?.validate());
+              onPressed: () async {
+                if (_signInFormKey.currentState!.validate()) {
+                  final user = await Provider.of<Auth>(context, listen: false)
+                      .signInUserWithEmailAndPassword(
+                          controllerMail, controllerSifre);
+                }
               },
               child: Text(
                 "Giriş",
@@ -169,7 +177,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
             ElevatedButton(
               onPressed: () async {
                 if (_registerFormKey.currentState!.validate()) {
-                  // bütün form elemanları okey verdiyse
+                  // bütün form elemanları okey verdiyse yani verilen kurallar tamamsa
                   final user = await Provider.of<Auth>(context, listen: false)
                       .createCreateUserWithEmailAndPassword(
                           controllerEmail.text, controllerPassword.text);
