@@ -11,7 +11,7 @@ class EmailSignInPage extends StatefulWidget {
   State<EmailSignInPage> createState() => _EmailSignInPageState();
 }
 
-enum FormStatus { signIn, register }
+enum FormStatus { signIn, register, reset }
 
 class _EmailSignInPageState extends State<EmailSignInPage> {
   FormStatus _formStatus = FormStatus.signIn;
@@ -22,7 +22,9 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
       body: Center(
         child: _formStatus == FormStatus.signIn
             ? buildSignInForm()
-            : buildRegisterForm(),
+            : _formStatus == FormStatus.register
+                ? buildRegisterForm()
+                : buildResetInForm(),
       ),
     );
   }
@@ -84,7 +86,12 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 if (_signInFormKey.currentState!.validate()) {
                   final user = await Provider.of<Auth>(context, listen: false)
                       .signInUserWithEmailAndPassword(
-                          controllerMail, controllerSifre);
+                          controllerMail.text, controllerSifre.text);
+                  if (!user!.emailVerified) {
+                    await _showMyDialog();
+                    await Provider.of<Auth>(context, listen: false).signOut();
+                  }
+                  Navigator.pop(context);
                 }
               },
               child: Text(
@@ -99,18 +106,77 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
               },
               child: Text("Yeni Kayıt İçin Tıklayınız.",
                   style: TextStyle(fontSize: 16)),
-            )
+            ),
+            TextButton(
+                onPressed: () {
+                  setState(() {
+                    _formStatus = FormStatus.reset;
+                  });
+                },
+                child: Text("Şifrenizi mi Unuttunuz ?"))
           ],
         ),
       ),
     );
   }
 
-  TextEditingController controllerPassword = new TextEditingController();
-  TextEditingController controllerEmail = new TextEditingController();
+  Widget buildResetInForm() {
+    final _resetFormKey = GlobalKey<FormState>();
+    TextEditingController controllerMail = new TextEditingController();
+
+    return Padding(
+      padding: const EdgeInsets.all(30.0),
+      child: Form(
+        // TUM YAPIYI FORM WIDGETI ILE SARMALADIK FORM VALDITION YAPABİLİRİZ
+        key: _resetFormKey,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "ŞİFRE YENİLEME",
+              style: TextStyle(fontSize: 20),
+            ),
+            TextFormField(
+              controller: controllerMail,
+              validator: (value) {
+                if (!EmailValidator.validate(value.toString())) {
+                  return 'Lütfen Geçerli bir adres giriniz!';
+                } else {
+                  return null;
+                }
+              },
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.email),
+                hintText: "E-mail",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_resetFormKey.currentState!.validate()) {
+                  await Provider.of<Auth>(context, listen: false)
+                      .sendPasswordResetEmail(controllerMail.text);
+await _showResetDialog();
+                  Navigator.pop(context);
+                }
+              },
+              child: Text(
+                "GÖNDER",
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget buildRegisterForm() {
     final _registerFormKey = GlobalKey<FormState>();
+    TextEditingController controllerPassword = new TextEditingController();
+    TextEditingController controllerEmail = new TextEditingController();
 
     return Padding(
       padding: const EdgeInsets.all(30.0),
@@ -187,6 +253,8 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                     await user.sendEmailVerification();
                   }
                   _showMyDialog();
+                  await Provider.of<Auth>(context, listen: false).signOut();
+
                   setState(() {
                     _formStatus = FormStatus.signIn;
                   });
@@ -223,6 +291,35 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 Text('Merhaba Lütfen Mail adresinizi kontrol ediniz.'),
                 Text(
                     'Mailinizi onayladıktan sonra tekrar giriş yapabilirsiniz.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('ANLADIM.'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showResetDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ŞİFRE DEĞİŞİKLİĞİ GÖNDERİLDİ'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Merhaba Lütfen Mail adresinizi kontrol ediniz.'),
+                Text(
+                    'Şifrenizi değiştirdikten sonra sonra tekrar giriş yapabilirsiniz.'),
               ],
             ),
           ),

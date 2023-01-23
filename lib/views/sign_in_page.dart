@@ -27,6 +27,18 @@ class _SignInPageState extends State<SignInPage> {
     print(user?.uid);
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final user =
+        await Provider.of<Auth>(context, listen: false).signInWithGoogle();
+    setState(() {
+      _isLoading = false;
+    });
+    print(user?.uid);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +79,7 @@ class _SignInPageState extends State<SignInPage> {
             MyElevatedButton(
               child: Text("Google"),
               color: Colors.blue,
-              onPressed: () {},
+              onPressed: _isLoading ? () {} : _signInWithGoogle,
             ),
           ],
         ),
