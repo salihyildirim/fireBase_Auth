@@ -1,4 +1,5 @@
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -159,7 +160,7 @@ class _EmailSignInPageState extends State<EmailSignInPage> {
                 if (_resetFormKey.currentState!.validate()) {
                   await Provider.of<Auth>(context, listen: false)
                       .sendPasswordResetEmail(controllerMail.text);
-await _showResetDialog();
+                  await _showResetDialog();
                   Navigator.pop(context);
                 }
               },
@@ -242,22 +243,26 @@ await _showResetDialog();
             ),
             ElevatedButton(
               onPressed: () async {
-                if (_registerFormKey.currentState!.validate()) {
-                  // bütün form elemanları okey verdiyse yani verilen kurallar tamamsa
-                  final user = await Provider.of<Auth>(context, listen: false)
-                      .createCreateUserWithEmailAndPassword(
-                          controllerEmail.text, controllerPassword.text);
-                  print(user?.uid);
+                try {
+                  if (_registerFormKey.currentState!.validate()) {
+                    // bütün form elemanları okey verdiyse yani verilen kurallar tamamsa
+                    final user = await Provider.of<Auth>(context, listen: false)
+                        .createCreateUserWithEmailAndPassword(
+                            controllerEmail.text, controllerPassword.text);
+                    print(user?.uid);
 
-                  if (!user!.emailVerified) {
-                    await user.sendEmailVerification();
+                    if (!user!.emailVerified) {
+                      await user.sendEmailVerification();
+                    }
+                    _showMyDialog();
+                    await Provider.of<Auth>(context, listen: false).signOut();
+
+                    setState(() {
+                      _formStatus = FormStatus.signIn;
+                    });
                   }
-                  _showMyDialog();
-                  await Provider.of<Auth>(context, listen: false).signOut();
-
-                  setState(() {
-                    _formStatus = FormStatus.signIn;
-                  });
+                } on FirebaseAuthException catch (e) {
+                  print("kayıt problemi oluştu : ${e.message}");
                 }
               },
               child: Text(

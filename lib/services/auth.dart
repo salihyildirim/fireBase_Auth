@@ -12,10 +12,17 @@ class Auth {
   }
 
   Future<User?> createCreateUserWithEmailAndPassword(email, password) async {
-    UserCredential userCredential = await _firebaseAuth
-            .createUserWithEmailAndPassword(email: email, password: password)
-        as UserCredential;
-    return userCredential.user;
+    UserCredential? userCredential;
+    try {
+      userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+          email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+      print(e.message);
+      rethrow;
+    }
+
+    return userCredential?.user;
   }
 
   Future<void> sendPasswordResetEmail(email) async {
@@ -24,8 +31,7 @@ class Auth {
 
   Future<User?> signInUserWithEmailAndPassword(email, password) async {
     UserCredential userCredential = await _firebaseAuth
-            .signInWithEmailAndPassword(email: email, password: password)
-        as UserCredential;
+        .signInWithEmailAndPassword(email: email, password: password);
     return userCredential.user;
   }
 
@@ -57,7 +63,7 @@ class Auth {
       UserCredential userCredential =
           await _firebaseAuth.signInWithCredential(credential);
 
-      return userCredential.user;
+      return userCredential?.user;
     } else
       return null;
   }
